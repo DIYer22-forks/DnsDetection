@@ -1,2 +1,2 @@
 # DnsDetection
-DnsTunnel_Detection_via_ML/DL    creating........
+DnsTunnel_Detection_via_ML/DL
