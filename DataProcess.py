@@ -11,7 +11,23 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 
+from torch.utils.data import Dataset, DataLoader
 
+
+
+
+class CustomDataset(Dataset):
+    def __init__(self, data, labels):
+        self.data = data
+        self.labels = labels
+
+    def __getitem__(self, index):
+        x = self.data[index]
+        y = self.labels[index]
+        return x, y
+
+    def __len__(self):
+        return len(self.data)
 
 class DataProcess(object):
     def __init__(self, typet, data_file, alpha,
@@ -42,8 +58,7 @@ class DataProcess(object):
         for count in num_counts.values():
             probability = count/lens
             entropy += - probability * math.log2(probability)
-        return entropy*10
-
+        return int(entropy*10)
 
 
     def load_data(self):
@@ -85,7 +100,7 @@ class DataProcess(object):
         """
         s = s.lower()
         max_length = min(len(s), size)
-        str2idx = np.zeros(size, dtype='float32')
+        str2idx = np.zeros(size, dtype='int64')
         for i in range(max_length):
             str2idx[i] = self.dict[s[i]]
         return str2idx
@@ -107,7 +122,7 @@ class DataProcess(object):
         datasize = len(self.data)  
         start_index = 0
         end_index = datasize
-        batch_txts = self.data[start_index:500]  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        batch_txts = self.data[start_index:end_index]  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         batch_indices = []
         one_hot = np.eye(self.classes, dtype='int64')
         classes = []
@@ -121,12 +136,12 @@ class DataProcess(object):
             la = one_hot[int(la)]
             doa = self.str_to_indexes(doa, sizeeeeee)
             subdoa = self.str_to_indexes(subdoa, sizeeeeee)
-            donum = np.float32([0.001 if not donum else donum])
-            doent = np.float32([0.001 if not doent else doent])
-            do123 = np.float32([0.001 if not do123 else do123])
-            dosym = np.float32([0.001 if not dosym else dosym])
-            subnum =  np.float32([0.001 if not subnum else subnum])
-            subdoent = np.float32([0.001 if not subdoent else subdoent])
+            donum = np.int64([donum])
+            doent = np.int64([0 if not doent else int(doent)])
+            do123 = np.int64([do123])
+            dosym = np.int64([dosym])
+            subnum =  np.int64([subnum])
+            subdoent = np.int64([0 if not subdoent else int(subdoent)])
             
             batch_indices.append(np.concatenate((doa, donum, doent, do123, dosym, subdoa, subnum, subdoent), axis = 0))
             # batch_indices.append([doa, donum, doent, do123, dosym, subdoa, subnum, subdoent])
@@ -136,23 +151,24 @@ class DataProcess(object):
 
 
 
-        # p/batch_txts[13]
-        # tmp = self.str_to_indexes(batch_txts[0][1])
-        # p/tmp
-        # p/batch_indices
-        # tree-batch_indices
-        # batch_indices = np.asarray(batch_indices, dtype='int64')
-        # tree-batch_indices
-        # classes = np.asarray(classes)
-        
-        batch_indices = torch.tensor(batch_indices).float()
-        batch_indices = torch.unsqueeze(batch_indices, dim = -2)
-        classes = torch.Tensor(classes).float()
-        
-        mean = batch_indices.mean(dim=(0, 2))
-        std = batch_indices.std(dim=(0, 2))
 
-        normalize = transforms.Normalize(mean=mean, std=std)
-        batch_indices = normalize(batch_indices)
+        batch_indices = torch.tensor(batch_indices)
+        # batch_indices = torch.unsqueeze(batch_indices, dim = -2)
+        classes = torch.Tensor(classes)
+        
+        # batch_indices = torch.tensor(batch_indices).float()
+        # batch_indices = torch.unsqueeze(batch_indices, dim = -2)
+        # classes = torch.Tensor(classes).float()
+        
+        # mean = batch_indices.mean(dim=(0, 2))
+        # std = batch_indices.std(dim=(0, 2))
+
+        # normalize = transforms.Normalize(mean=mean, std=std)
+        # batch_indices = normalize(batch_indices)
         g()
         return batch_indices, classes
+
+    #变成torch的数据集形式，然后就可以加载到loader
+    def getloaddata(self, train_dataset, train_label):
+        dataset = CustomDataset(data=train_dataset, labels=train_label)
+        return dataset
