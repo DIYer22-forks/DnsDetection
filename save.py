@@ -18,7 +18,7 @@ p/curr_files
 print("please inter the accuarcy:----------")
 # accuarcy = input()
 accuarcy= 0.86
-file_name = str(datetime.now().strftime('%y.%m.%d %H:%M') ) + '_' + str(accuarcy) 
+file_name = str(datetime.now().strftime('%y.%m.%d %H.%M') ) + '_' + str(accuarcy) 
 
 with open(file_name, 'w') as f:
     f.write(file_name + '.txt')
