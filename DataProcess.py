@@ -172,3 +172,27 @@ class DataProcess(object):
     def getloaddata(self, train_dataset, train_label):
         dataset = CustomDataset(data=train_dataset, labels=train_label)
         return dataset
+    
+    
+    def get_k_fold(self, k, i, train_dataset, train_label):
+        fold_size = train_dataset.shape[0]//k
+        
+        data_train, label_train = None, None
+        
+        for j in range(k):
+            
+            idx = slice(j * fold_size, (j + 1) * fold_size)
+            
+            
+            X_part, y_part = train_dataset[idx,:],train_label[idx, :]
+            
+            if j == i: 
+                data_valid, label_valid = X_part, y_part
+            elif data_train is None:
+                data_train, label_train = X_part, y_part
+                
+            else:
+                data_train = torch.cat((data_train, X_part), dim=0) #dim=0增加行数，竖着连接
+                label_train = torch.cat((label_train, y_part), dim=0)
+            
+        return data_train, label_train, data_valid, label_valid

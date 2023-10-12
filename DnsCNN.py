@@ -33,26 +33,27 @@ class DnsCnn(nn.Module):
         '''
         super(DnsCnn, self).__init__()
         self.input_size = input_size
-        self.in_channels = 128
+        self.in_channels = dim
         self.out_channels = 64
         self.alpha_size = alpha_size
         self.embedding_size = embedding_size
         self.kernel_size = kernel_size
         self.num_of_classes = num_of_classes
-        self.droupout = droupout
+        # self.droupout = droupout
         self.optimizer = optimizer
         self.loss = loss
         self.Sigmoid = nn.Sigmoid()
         self.tryconv = nn.Conv1d(self.in_channels, self.out_channels, self.kernel_size,  stride=1, padding=1, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)
         self.dim = dim
-        self.item = 1
+        self.item = 4
         # (in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)
         self.conv = nn.Conv1d(self.out_channels, self.out_channels, self.kernel_size,  stride=1, padding=1, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)
         self.bn = nn.BatchNorm1d(self.out_channels, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True, device=None, dtype=None)
         self.relu = nn.ReLU(inplace=True)
+        self.lrelu = nn.LeakyReLU(negative_slope=0.01, inplace=False)
         self.pool = nn.AvgPool1d(kernel_size=2, stride=2, padding=1) 
         self.line = nn.Linear(((self.input_size//2)+1)*self.out_channels, self.num_of_classes, bias=True, device=None, dtype=None)
-        self.dropout = nn.Dropout(p = 0.5)
+        self.dropout = nn.Dropout(p = droupout)
         self.embedding = nn.Embedding(self.alpha_size+1, self.in_channels)
 
     def forward(self, x):
@@ -65,8 +66,9 @@ class DnsCnn(nn.Module):
         for _ in range(self.item):
             outs = self.conv(outs)   
             outs = self.bn(outs) 
-            outs = self.relu(outs) 
-            outs = self.dropout(outs)
+            outs = self.lrelu(outs) 
+
+            # outs += residual 
         outs = self.pool(outs) 
             # tree-outs
             # tree-out
@@ -76,6 +78,7 @@ class DnsCnn(nn.Module):
         outs = outs.view(outs.size(0), -1)
         # tree-outs
         outs = self.line(outs)
+        outs = self.dropout(outs)
         outs = self.Sigmoid(outs)
         # out = self.softmax(out)
         

@@ -16,17 +16,17 @@ curr_files = os.listdir(curr_path)
 p/curr_files
 
 print("please inter the accuarcy:----------")
-# accuarcy = input()
-accuarcy= 0.86
-file_name = str(datetime.now().strftime('%y.%m.%d %H.%M') ) + '_' + str(accuarcy) 
+accuarcy = input()
+# accuarcy= 0.86
+file_name = str(datetime.now().strftime('%y.%m.%d %H.%M') ) + '_' + str(accuarcy) +'.py'
 
-with open(file_name, 'w') as f:
+with open(file_name, 'w', encoding = 'utf-8') as f:
     f.write(file_name + '.txt')
     
     for i in curr_files:
         if '.py' in i:
             f.write(i + '\n' + '\n')
-            with open(i, 'r') as fpy:
+            with open(i, 'r', encoding = 'utf-8') as fpy:
                 for line in fpy:
                     f.write(line)
                 f.write('\n')
