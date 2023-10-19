@@ -100,9 +100,13 @@ class DataProcess(object):
         """
         s = s.lower()
         max_length = min(len(s), size)
-        str2idx = np.zeros(size, dtype='int64')
+        str2idx = np.zeros(size, dtype='int32')
         for i in range(max_length):
-            str2idx[i] = self.dict[s[i]]
+            if s[i] in self.dict:
+                 str2idx[i] = self.dict[s[i]]
+            else:
+                str2idx[i] = 1
+                
         return str2idx
 
     def get_all_data(self):
@@ -124,7 +128,7 @@ class DataProcess(object):
         end_index = datasize
         batch_txts = self.data[start_index:end_index]  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         batch_indices = []
-        one_hot = np.eye(self.classes, dtype='int64')
+        one_hot = np.eye(self.classes, dtype='float32')
         classes = []
         # what-self.data
         # what-batch_txts
@@ -136,12 +140,12 @@ class DataProcess(object):
             la = one_hot[int(la)]
             doa = self.str_to_indexes(doa, sizeeeeee)
             subdoa = self.str_to_indexes(subdoa, sizeeeeee)
-            donum = np.int64([donum])
-            doent = np.int64([0 if not doent else int(doent)])
-            do123 = np.int64([do123])
-            dosym = np.int64([dosym])
-            subnum =  np.int64([subnum])
-            subdoent = np.int64([0 if not subdoent else int(subdoent)])
+            donum = np.int32([donum])
+            doent = np.int32([0 if not doent else int(doent)])
+            do123 = np.int32([do123])
+            dosym = np.int32([dosym])
+            subnum =  np.int32([subnum])
+            subdoent = np.int32([0 if not subdoent else int(subdoent)])
             
             batch_indices.append(np.concatenate((doa, donum, doent, do123, dosym, subdoa, subnum, subdoent), axis = 0))
             # batch_indices.append([doa, donum, doent, do123, dosym, subdoa, subnum, subdoent])
@@ -167,6 +171,64 @@ class DataProcess(object):
         # batch_indices = normalize(batch_indices)
         g()
         return batch_indices, classes
+    
+    def get_all_data_puredata(self):
+        '''
+        get the np-type data, with one-hot label.    onebatch!
+        la: label
+        doa: domian 
+        donum: len(domain) 
+        doent: domain.entropy 
+        do123,; domain_have_number 
+        dosym: domain_have_symbol 
+        subdo: sub-domain
+        subnum: len(sub-domain)
+        subdoent: subdomain_entropy
+        '''
+        print(self.typet + "data transfer starting...........")
+        datasize = len(self.data)  
+        start_index = 0
+        end_index = datasize
+        batch_txts = self.data[start_index:end_index]  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        batch_indices = []
+        one_hot = np.eye(self.classes, dtype='int64')
+        classes = []
+        # what-self.data
+        # what-batch_txts
+        sizeeeeee = self.size//2
+        
+        for line in batch_txts:
+            la, doa, donum, doent, do123, dosym, subdoa, subnum, subdoent = line
+            # print(la, doa, donum, doent, do123, dosym, subdo, subnum,'\n')
+            la = one_hot[int(la)]
+            doa = self.str_to_indexes(doa, sizeeeeee)
+            subdoa = self.str_to_indexes(subdoa, sizeeeeee)
+            
+            batch_indices.append(np.concatenate((doa, subdoa), axis = 0))
+            # batch_indices.append([doa, donum, doent, do123, dosym, subdoa, subnum, subdoent])
+            classes.append(la)
+        # tree/batch_indices
+        print(self.typet + "data transfer finishing...........")   #12986
+
+
+
+
+        batch_indices = torch.tensor(batch_indices)
+        # batch_indices = torch.unsqueeze(batch_indices, dim = -2)
+        classes = torch.Tensor(classes)
+        
+        # batch_indices = torch.tensor(batch_indices).float()
+        # batch_indices = torch.unsqueeze(batch_indices, dim = -2)
+        # classes = torch.Tensor(classes).float()
+        
+        # mean = batch_indices.mean(dim=(0, 2))
+        # std = batch_indices.std(dim=(0, 2))
+
+        # normalize = transforms.Normalize(mean=mean, std=std)
+        # batch_indices = normalize(batch_indices)
+        g()
+        return batch_indices, classes
+    
 
     #变成torch的数据集形式，然后就可以加载到loader
     def getloaddata(self, train_dataset, train_label):
@@ -196,3 +258,69 @@ class DataProcess(object):
                 label_train = torch.cat((label_train, y_part), dim=0)
             
         return data_train, label_train, data_valid, label_valid
+    
+    
+    def get_all_data_np(self):
+        '''
+        get the np-type data, with one-hot label.    onebatch!
+        la: label
+        doa: domian 
+        donum: len(domain) 
+        doent: domain.entropy 
+        do123,; domain_have_number 
+        dosym: domain_have_symbol 
+        subdo: sub-domain
+        subnum: len(sub-domain)
+        subdoent: subdomain_entropy
+        '''
+        
+        batchsize = 100
+        
+        print(self.typet + "data transfer starting...........")
+        datasize = len(self.data)  
+        start_index = 0
+        end_index = datasize
+        batch_txts = self.data[start_index:end_index]  #!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        batch_indices = []
+        one_hot = np.eye(self.classes, dtype='int64')
+        classes = []
+        
+        
+        i_end = batchsize
+        final_data_d = []
+        final_data_l = []
+        # what-self.data
+        # what-batch_txts
+        sizeeeeee = (self.size-6)//2
+        for i in range(0, datasize+batchsize-1, batchsize):
+            if  i_end > datasize:
+                i_end = datasize
+            for line in self.data[i:i_end]:
+                la, doa, donum, doent, do123, dosym, subdoa, subnum, subdoent = line
+                # print(la, doa, donum, doent, do123, dosym, subdo, subnum,'\n')
+
+                doa = self.str_to_indexes(doa, sizeeeeee)
+                subdoa = self.str_to_indexes(subdoa, sizeeeeee)
+                donum = np.int64([donum])
+                doent = np.int64([0 if not doent else int(doent)])
+                do123 = np.int64([do123])
+                dosym = np.int64([dosym])
+                subnum =  np.int64([subnum])
+                subdoent = np.int64([0 if not subdoent else int(subdoent)])
+                
+                batch_indices.append(np.concatenate((doa, donum, doent, do123, dosym, subdoa, subnum, subdoent), axis = 0))
+                # batch_indices.append([doa, donum, doent, do123, dosym, subdoa, subnum, subdoent])
+                classes.append(la)
+            i_end += batchsize
+            if batch_indices:
+                final_data_d.append(batch_indices)
+                final_data_l.append(classes[i:i_end])
+            batch_indices = []
+            
+        # tree/batch_indices
+        print(self.typet + "data transfer finishing...........")   #12986
+
+        # tree-final_data
+        
+
+        return final_data_d,final_data_l

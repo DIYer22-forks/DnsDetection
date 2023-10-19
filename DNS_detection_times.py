@@ -108,7 +108,7 @@ class Trainer():
         # p/loss
         p/' '
         p/"Training Finished!"
-        return 
+        return (tp, tn, fp, fn)
     
     
 class Tester():
@@ -192,10 +192,10 @@ def main():
     batch_size = 1000
 
 
-    DnsDetect = DnsCnn(dim,input_size, alpha_size, embedding_size, kernel_size, num_of_classes, droupout, optimizer = 'adam', loss='categorical_crossentropy')
+    DnsDetect = DnsCnn(dim,input_size, alpha_size, embedding_size, kernel_size, num_of_classes, droupout)
  
 
-    times = 10
+    times = 5
     
     # loss = nn.BCELoss()
     loss = nn.SmoothL1Loss()
@@ -203,40 +203,56 @@ def main():
         
     save_mode_path = 'final_model.pth'
 
-    # train_data = DataProcess('train', train_file, alpha, dim, 2)  # 128
-    # train_data.load_data()
-    # train_dataset, train_label = train_data.get_all_data()   # train_dataset.shape  --  (12986, 256)    traing_label.shape  --  (12986, 2)
+    train_data = DataProcess('train', train_file, alpha, dim, 2)  # 128
+    train_data.load_data()
+    train_dataset, train_label = train_data.get_all_data()   # train_dataset.shape  --  (12986, 256)    traing_label.shape  --  (12986, 2)
     # numtr = train_dataset.shape[0]
     
+    valid_data = DataProcess('train', train_file, alpha, dim, 2)  # 128
+    valid_data.load_data()
+    train_dataset, train_label = train_data.get_all_data() 
 
-    
-    # for time in range(times):
-    #     data_train, label_train, data_valid, label_valid = train_data.get_k_fold(times, time, train_dataset, train_label)
-    #     train_dataload =  train_data.getloaddata(data_train, label_train)
-    #     train_dataloader = DataLoader(train_dataload, batch_size=batch_size,shuffle=True)
+    tp = tn = fp = fn=0
+    for time in range(times):
+        data_train, label_train, data_valid, label_valid = train_data.get_k_fold(times, time, train_dataset, train_label)
+        train_dataload =  train_data.getloaddata(data_train, label_train)
+        train_dataloader = DataLoader(train_dataload, batch_size=batch_size,shuffle=True)
         
-    #     valid_dataload =  train_data.getloaddata(data_valid, label_valid)
-        # valid_dataloader = DataLoader(valid_dataload, batch_size=batch_size,shuffle=True)
-          # numva = train_dataload.shape[0]
+        valid_dataload =  train_data.getloaddata(data_valid, label_valid)
+        valid_dataloader = DataLoader(valid_dataload, batch_size=batch_size,shuffle=True)
         
+        # tree-data_train
+        # tree-label_train
 
             
-    #     trainF = Trainer(DnsDetect, loss, optimizer, batch_size)
-    #     trainF.train(train_dataloader, save_mode_path, numva, valid_dataloader,ACC)
+        trainF = Trainer(DnsDetect, loss, optimizer, batch_size)
+        tp1, tn1, fp1, fn1 = trainF.train(train_dataloader, save_mode_path, num, valid_dataloader,ACC)
+        tp += tp1
+        tn += tn1
+        fp += fp1
+        fn += fn1
+        
+    precision = round((tp+0.01)/(tp+fp+0.01),4)
+    # 召回率 = TP / (TP + FN)
+    recall = round((tp+0.01)/(tp+fn+0.01),4)
+
+    accuracy = round((tp+tn+0.01)/num,4)
     
-    test_data = DataProcess('test', test_file, alpha, dim, 2)  # 128
-    test_data.load_data()
-    test_dataset, test_label = test_data.get_all_data()   # train_dataset.shape  --  (12986, 1, 128)    traing_label.shape  --  (12986, 2)
-    test_dataload =  test_data.getloaddata(test_dataset, test_label)
-    test_dataloader = DataLoader(test_dataload, batch_size=batch_size,shuffle=True)
-    numte = test_dataset.shape[0]
+    print('precision:',precision, 'recall:',recall,'accuary:', accuracy)
+
+#     test_data = DataProcess('test', test_file, alpha, dim, 2)  # 128
+#     test_data.load_data()
+#     test_dataset, test_label = test_data.get_all_data()   # train_dataset.shape  --  (12986, 1, 128)    traing_label.shape  --  (12986, 2)
+#     test_dataload =  test_data.getloaddata(test_dataset, test_label)
+#     test_dataloader = DataLoader(test_dataload, batch_size=batch_size,shuffle=True)
+#     numte = test_dataset.shape[0]
     
     
 
     
     
-    testF = Tester(DnsDetect, loss, optimizer, batch_size)
-    testF.test(numte, test_dataloader, save_mode_path)
+#     testF = Tester(DnsDetect, loss, optimizer, batch_size)
+#     testF.test(numte, test_dataloader, save_mode_path)
 
 
     print("it work!")

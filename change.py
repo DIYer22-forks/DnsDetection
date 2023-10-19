@@ -67,58 +67,56 @@ import numpy as np
 # # rr[rr['Label'] == 0].shape
 # rr.duplicated(subset = 'Label' )
 
-def get_k_fold_data(k, i, X, y):
-    assert k >1
-    fold_size = X.shape[0]//k
-    X_train, y_train = None, None
+# def get_k_fold_data(k, i, X, y):
+#     assert k >1
+#     fold_size = X.shape[0]//k
+#     X_train, y_train = None, None
     
-    for j in range(k):
-        p/j
-        idx = slice(j * fold_size, (j + 1) * fold_size)
-        p/idx
+#     for j in range(k):
+#         p/j
+#         idx = slice(j * fold_size, (j + 1) * fold_size)
+#         p/idx
         
         
-        X_part, y_part = X[idx,:],y[idx]
+#         X_part, y_part = X[idx,:],y[idx]
         
-        if j == i: 
-            X_valid, y_valid = X_part, y_part
-        elif X_train is None:
-            X_train, y_train = X_part, y_part
+#         if j == i: 
+#             X_valid, y_valid = X_part, y_part
+#         elif X_train is None:
+#             X_train, y_train = X_part, y_part
             
-        else:
-            X_train = torch.cat((X_train, X_part), dim=0) #dim=0增加行数，竖着连接
-            y_train = torch.cat((y_train, y_part), dim=0)
+#         else:
+#             X_train = torch.cat((X_train, X_part), dim=0) #dim=0增加行数，竖着连接
+#             y_train = torch.cat((y_train, y_part), dim=0)
         
-    return X_train, y_train, X_valid, y_valid
+#     return X_train, y_train, X_valid, y_valid
 
-# x = torch.randn((50,5))
-# y = torch.randn((50,1))
-# x = pd.read_csv("dataset/dataset_train_tunnel.csv")
-# x = np.array(x, dtype = float32)
-# x = torch.tensor(x)
-y = pd.read_csv("dataset/dataset_test_tunnel.csv")
+# # x = torch.randn((50,5))
+# # y = torch.randn((50,1))
+# # x = pd.read_csv("dataset/dataset_train_tunnel.csv")
+# # x = np.array(x, dtype = float32)
+# # x = torch.tensor(x)
+# y = pd.read_csv("dataset/dataset_test_tunnel.csv")
 
-y = np.array(y)
-# y = torch.tensor(y)
-# X_train, y_train, X_valid, y_valid = get_k_fold_data(10, 0, x, y)
+# y = np.array(y)
+# # y = torch.tensor(y)
+# # X_train, y_train, X_valid, y_valid = get_k_fold_data(10, 0, x, y)
 
-from torch import nn 
-import torch 
+# from torch import nn 
+# import torch 
 
-class FocalLoss(nn.Module):
-    def __init__(self, gama=1.5, alpha=0.25, weight=None, reduction="mean") -> None:
-        super().__init__() 
-        self.loss_fcn = torch.nn.CrossEntropyLoss(weight=weight, reduction=reduction)
-        self.gama = gama 
-        self.alpha = alpha 
+# class FocalLoss(nn.Module):
+#     def __init__(self, gama=1.5, alpha=0.25, weight=None, reduction="mean") -> None:
+#         super().__init__() 
+#         self.loss_fcn = torch.nn.CrossEntropyLoss(weight=weight, reduction=reduction)
+#         self.gama = gama 
+#         self.alpha = alpha 
 
-    def forward(self, pre, target):
-        logp = self.loss_fcn(pre, target)
-        p = torch.exp(-logp) 
-        loss = (1-p)**self.gama * self.alpha * logp
-        return loss.mean()
-
-
+#     def forward(self, pre, target):
+#         logp = self.loss_fcn(pre, target)
+#         p = torch.exp(-logp) 
+#         loss = (1-p)**self.gama * self.alpha * logp
+#         return loss.mean()
 
 
 

@@ -16,19 +16,26 @@ curr_files = os.listdir(curr_path)
 p/curr_files
 
 print("please inter the accuarcy:----------")
-accuarcy = input()
-# accuarcy= 0.86
-file_name = str(datetime.now().strftime('%y.%m.%d %H.%M') ) + '_' + str(accuarcy) +'.py'
+
+# accuarcy = input("please inter:")
+
+accuarcy= 0.92
+# accuarcy= 0.81
+
+p/accuarcy
+file_name = str(datetime.now().strftime('%y.%m.%d %H.%M') ) + '_' + str(accuarcy) 
 
 with open(file_name, 'w', encoding = 'utf-8') as f:
     f.write(file_name + '.txt')
     
     for i in curr_files:
-        if '.py' in i:
+        if '.py' in i and 'chang' not in i:
             f.write(i + '\n' + '\n')
             with open(i, 'r', encoding = 'utf-8') as fpy:
                 for line in fpy:
-                    f.write(line)
+                    # p/line
+                    # f.write(line)
+                    pass
                 f.write('\n')
 
             
